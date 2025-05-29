@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Koikoi scorechart</title>
+    </head>
+
+    <body>
+        <table id="scoretable">
+            <tr id="scorehead">
+                <th>親 Oya</th>
+                <th>子 Ko</th>
+            </tr>
+        </table>
+
+        <input type="number" name="sizeInput" id="sizeInput" min="1" max="12" value="1">
+        <label for="sizeInput">月/months</label>
+
+        <button id="newgame">New game</button>
+
+        <script>
+            const scoreTable = document.getElementById("scoretable");
+            const scoreHead = document.getElementById("scorehead").cloneNode(true); // Save a copy of the scorehead for table reconstruction
+            const newGameButton = document.getElementById("newgame");
+
+            newGameButton.addEventListener("click", () => {
+                const sizeInput = document.getElementById("sizeInput");
+                const size = sizeInput.value;
+
+                // Delete table
+                scoreTable.innerHTML = "";                                          // Safe as this is not dependent on user input
+
+                // Re-add head
+                scoreTable.appendChild(scoreHead.cloneNode(true));
+
+                // Iterate new rows
+                for (let i = 1; i <= size; i++) {
+                    const tableRow = document.createElement("tr");
+
+                    ["oya", "ko"].forEach(() => {
+                        const cell = document.createElement("td");
+
+                        const input = document.createElement("input");
+
+                        input.type = "number";
+                        input.value = 0;
+                        input.addEventListener("input", recalculateTotals);
+
+                        cell.appendChild(input);
+
+                        tableRow.appendChild(cell);
+                    });
+
+                    scoreTable.appendChild(tableRow);
+                }
+
+                // Re-add totals
+                const tableRow = document.createElement("tr");
+
+                const oyaTotal = document.createElement("td");
+                oyaTotal.id = "oyatotal";
+                const koTotal = document.createElement("td");
+                koTotal.id = "kototal";
+
+                tableRow.append(oyaTotal);
+                tableRow.append(koTotal);
+                    
+                scoreTable.appendChild(tableRow);
+            });
+
+
+            function recalculateTotals() {
+                let oyaScore= 0;
+                let koScore = 0;
+
+                // Iterate through the table and sum the oya and ko scores
+                const size = scoreTable.childNodes.length;
+
+                console.log(size);
+                for (let i = 1; i < size-1; i++) {
+                    const element = scoreTable.childNodes[i];
+                    console.log(element);
+                    oyaScore += parseInt(element.childNodes[0].childNodes[0].value);
+                    koScore += parseInt(element.childNodes[1].childNodes[0].value);
+                }
+
+                // Display scores
+                document.getElementById("oyatotal").innerText = oyaScore;
+                document.getElementById("kototal").innerText = koScore;
+            }
+        </script>
+    </body>
+</html>
