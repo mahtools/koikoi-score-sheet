@@ -35,7 +35,7 @@
                 scoreTable.appendChild(scoreHead.cloneNode(true));
 
                 // Iterate new rows
-                for (let i = 1; i <= size; i++) {
+                for (let i = 1; i <= size; i++) {                                   // "oya ko" header means i should start at 1
                     const tableRow = document.createElement("tr");
 
                     ["oya", "ko"].forEach(() => {
@@ -45,6 +45,7 @@
 
                         input.type = "number";
                         input.value = 0;
+                        input.min = 0;
                         input.addEventListener("input", recalculateTotals);
 
                         cell.appendChild(input);
@@ -67,6 +68,7 @@
                 tableRow.append(koTotal);
                     
                 scoreTable.appendChild(tableRow);
+                recalculateTotals();
             });
 
 
@@ -78,11 +80,10 @@
                 const size = scoreTable.childNodes.length;
 
                 console.log(size);
-                for (let i = 1; i < size-1; i++) {
+                for (let i = 1; i < size-1; i++) {                                      // "oya ko" header means i should start at 1
                     const element = scoreTable.childNodes[i];
-                    console.log(element);
-                    oyaScore += parseInt(element.childNodes[0].childNodes[0].value);
-                    koScore += parseInt(element.childNodes[1].childNodes[0].value);
+                    oyaScore += parseInt(element.childNodes[0].childNodes[0].value);    // [0][0] = oya input element 
+                    koScore += parseInt(element.childNodes[1].childNodes[0].value);     // [1][0] = ko input element
                 }
 
                 // Display scores
