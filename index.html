@@ -4,9 +4,106 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Koikoi scorechart</title>
+        <style>
+            /* Global styles */
+            * {
+                font-family: sans-serif;
+                font-size: 20px;
+            }
+
+            label {
+                padding: 0px 20px;
+            }
+
+            input {
+                text-align: center;
+                box-sizing: border-box;
+
+                border-width: 2px;
+                border-radius: 20px;
+                border-style: solid;
+                border-color: #AAA;
+            }
+
+            input::-webkit-outer-spin-button,
+            input::-webkit-inner-spin-button {
+                -webkit-appearance: none;
+                margin: 0;
+            }
+
+            input[type=number] {
+                -moz-appearance: textfield;
+            }
+
+            button {
+                border-width: 2px;
+                border-radius: 20px;
+                border-style: solid;
+                border-color: #AAA;
+
+                background-color: #FFF;
+            }
+
+            button:hover {
+                background-color: #EEE;
+            }
+            }
+
+            #oyatotal, #kototal {
+                font-weight: bold;
+            }
+
+            /* Alignments */ 
+            #scoretable {
+                width: 100%;
+            }
+            
+            #scoretable td {
+                text-align: center;
+                vertical-align: middle;
+            }
+
+            #newgamecontainer {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            html {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            /* Mobile */
+            @media only screen and (orientation: portrait) {
+                body {
+                    min-width: 100%
+                }
+
+                label {
+                    padding: 0px;
+                }
+
+                #scoretable input {
+                    min-width: 90%
+                }
+
+                #sizeInput {
+                    min-width: 20%
+                }
+
+                #newgamecontainer {
+                    margin: 0 auto;
+                    width: 300px;
+                    justify-content: space-between;
+                }
+            }
+        </style>
     </head>
 
     <body>
+        <div>
         <table id="scoretable">
             <tr id="scorehead">
                 <th>親 Oya</th>
@@ -14,10 +111,12 @@
             </tr>
         </table>
 
-        <input type="number" name="sizeInput" id="sizeInput" min="1" max="12" value="1">
-        <label for="sizeInput">月/months</label>
-
-        <button id="newgame">New game</button>
+        <div id="newgamecontainer">
+            <input type="number" name="sizeInput" id="sizeInput" min="1" max="12" value="1">
+            <label for="sizeInput">月/months</label>
+            <button id="newgame"> 勝負/Go</button>
+        </div>
+        </div>
 
         <script>
             const scoreTable = document.getElementById("scoretable");
@@ -79,7 +178,6 @@
                 // Iterate through the table and sum the oya and ko scores
                 const size = scoreTable.childNodes.length;
 
-                console.log(size);
                 for (let i = 1; i < size-1; i++) {                                      // "oya ko" header means i should start at 1
                     const element = scoreTable.childNodes[i];
                     oyaScore += parseInt(element.childNodes[0].childNodes[0].value);    // [0][0] = oya input element 
@@ -90,6 +188,18 @@
                 document.getElementById("oyatotal").innerText = oyaScore;
                 document.getElementById("kototal").innerText = koScore;
             }
+
+            // Preventing device sleep
+            async function noSleep() {
+                const wakeLock = await navigator.wakeLock.request("screen");
+
+                // If we are no longer allowed to sleep, attempt to sleep
+                wakeLock.addEventListener("release", () => {
+                    noSleep();
+                });
+            }
+
+            noSleep();
         </script>
     </body>
 </html>
