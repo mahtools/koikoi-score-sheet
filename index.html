@@ -103,19 +103,19 @@
     </head>
 
     <body>
-        <div>
-        <table id="scoretable">
-            <tr id="scorehead">
-                <th>親 Oya</th>
-                <th>子 Ko</th>
-            </tr>
-        </table>
+        <div id="content">
+            <table id="scoretable">
+                <tr id="scorehead">
+                    <th>親 Oya</th>
+                    <th>子 Ko</th>
+                </tr>
+            </table>
 
-        <div id="newgamecontainer">
-            <input type="number" name="sizeInput" id="sizeInput" min="1" max="12" value="1">
-            <label for="sizeInput">月/months</label>
-            <button id="newgame"> 勝負/Go</button>
-        </div>
+            <div id="newgamecontainer">
+                <input type="number" name="sizeInput" id="sizeInput" min="1" max="12" value="1">
+                <label for="sizeInput">月/months</label>
+                <button id="newgame"> 勝負/Go</button>
+            </div>
         </div>
 
         <script>
@@ -201,5 +201,9 @@
 
             noSleep();
         </script>
+        <noscript>  <!-- Hiding the entire page if no script is active -->
+            <style>#container {display: none} </style>
+            <span>Please enable JavaScript</span>
+        </noscript>
     </body>
 </html>
