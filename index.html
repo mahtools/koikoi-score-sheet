@@ -79,6 +79,12 @@
             let oyaTotal = 0;
             let koTotal = 0;
 
+            // Utils
+            function sanatiseInput(target) {
+                if (isNaN(parseInt(target.value)))
+                    target.value = 0
+            }
+
             // Bindings
             function recalculateTotals() {
                 oyaTotal = 0;
@@ -90,6 +96,8 @@
                 OYATOTAL.innerText = oyaTotal;
                 KOTOTAL.innerText = koTotal;
             }
+
+            INP_NEWGAME.addEventListener("change", () => sanatiseInput(INP_NEWGAME));
 
             BTN_NEWGAME.addEventListener("click", () => {
                 const val = parseInt(INP_NEWGAME.value);
@@ -116,7 +124,10 @@
 
                     // Oya
                     const o = document.createElement("input");
-                    o.addEventListener("change", (_) => recalculateTotals());
+                    o.addEventListener("change", (_) => {
+                        sanatiseInput(o);
+                        recalculateTotals()}
+                    );
                     o.type = "number";
                     o.min = 0;
                     o.value = 0;
