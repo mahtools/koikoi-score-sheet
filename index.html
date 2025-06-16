@@ -5,11 +5,27 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Koi-koi scoresheet</title>
         <style>
+            /* Global variables and styles */
             :root {
                 --bg: #FFFFFF;
                 --fg: #000000;
-                --cell-height: 20px;
+                --cell-height: 5vmin;
+                font-family: sans-serif;
             }
+
+            /* Center content */ 
+            #content {
+                width: min-content;
+                margin: 0px auto;
+            }
+
+            #controls, #controls * {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+
+            /* Table */
             #cols {
                 display: flex;
             }
@@ -17,16 +33,35 @@
             #month, #pic, #oyain, #koin, #monthinner, #picinner, #oyainner, #koinner {
                 display: flex;
                 flex-direction: column;
+                min-width: max-content;
             }
 
-            input, p {
+            input, p, svg {
                 height: var(--cell-height);
-                margin: 0;
+                margin: 3px;
                 padding: 0;
                 box-sizing: border-box;
+                font-size: calc(var(--cell-height)/2);
 
                 display: flex;
                 justify-content: center;
+            }
+
+            p {
+                line-height: var(--cell-height);
+            }
+
+            input[type=number] {
+                -moz-appearance: textfield;
+                border: 2px solid #AAA;
+                border-radius: 5vmin;
+                text-align: center;
+            }
+
+            input::-webkit-outer-spin-button,
+            input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+                margin: 0;
             }
         </style>
     </head>
@@ -35,7 +70,7 @@
         <div id="content">
             <div id="cols">
                 <div id="month">
-                    <p>月/Month</p>
+                    <p><strong>月/Month</strong></p>
                     <div id="monthinner"></div>
                 </div>
                 <div id="pic">
@@ -43,19 +78,21 @@
                     <div id="picinner"></div>
                 </div>
                 <div id="oyain">
-                    <p>親/Oya</p>
+                    <p><strong>親/Oya</strong></p>
                     <div id="oyainner"></div>
-                    <p id="oyatotal"></p>
+                    <p><strong id="oyatotal"></strong></p>
                 </div>
                 <div id="koin">
-                    <p>子/Ko</p>
+                    <p><strong>子/Ko</strong></p>
                     <div id="koinner"></div>
-                    <p id="kototal"></p>
+                    <p><strong id="kototal"></strong></p>
                 </div>
             </div>
 
+            <hr />
+
             <div id="controls">
-                <input type="number" name="sizeinput" id="sizeinput" min="1" max="12" value="1">
+                <input type="number" name="sizeinput" id="sizeinput" min="1" max="12" value="1"> 
                 <label for="sizeinput">月/months</label>
                 <button id="newgame"> 勝負/Go</button>
             </div>
@@ -83,6 +120,9 @@
             function sanatiseInput(target) {
                 if (isNaN(parseInt(target.value)))
                     target.value = 0
+
+                if (parseInt(target.value) < 0) 
+                    target.value = 0
             }
 
             // Bindings
@@ -97,52 +137,62 @@
                 KOTOTAL.innerText = koTotal;
             }
 
-            INP_NEWGAME.addEventListener("change", () => sanatiseInput(INP_NEWGAME));
+            window.onload = () => {
+                // Sanatising "month" input box
+                INP_NEWGAME.addEventListener("change", () => {
+                    sanatiseInput(INP_NEWGAME);
+                    INP_NEWGAME.value = INP_NEWGAME.value <= 0 ? 1 : INP_NEWGAME.value;
+                    INP_NEWGAME.value = INP_NEWGAME.value > 12 ? 1 : INP_NEWGAME.value;
+                });
 
-            BTN_NEWGAME.addEventListener("click", () => {
-                const val = parseInt(INP_NEWGAME.value);
-                console.log(val);
+                // Populating table
+                BTN_NEWGAME.addEventListener("click", () => {
+                    const val = parseInt(INP_NEWGAME.value);
 
-                // Clearing elements
-                MONTHS.innerHTML = "";
-                PICS.innerHTML = "";
-                OYAIN.innerHTML = "";
-                KOIN.innerHTML = "";
+                    // Clearing elements
+                    MONTHS.innerHTML = "";
+                    PICS.innerHTML = "";
+                    OYAIN.innerHTML = "";
+                    KOIN.innerHTML = "";
 
-                // Creating new elements
-                for (let i = 1; i <= val; i++) {
-                    // Month
-                    const m = document.createElement("p");
-                    m.innerText = i;
-                    MONTHS.appendChild(m);
+                    // Creating new elements
+                    for (let i = 1; i <= val; i++) {
+                        // Month
+                        const m = document.createElement("p");
+                        m.innerText = i;
+                        MONTHS.appendChild(m);
 
 
-                    // Pic
-                    const p = document.createElement("svg");
-                    PICS.appendChild(p);
+                        // Pic
+                        const p = document.createElement("svg");
+                        PICS.appendChild(p);
+                        
+
+                        // Oya
+                        const o = document.createElement("input");
+                        o.addEventListener("change", (_) => {
+                            sanatiseInput(o);
+                            recalculateTotals()}
+                        );
+                        o.type = "number";
+                        o.min = 0;
+                        o.value = 0;
+                        o.innerText = i;
+                        OYAIN.appendChild(o);
+
+
+                        // Ko
+                        const k = o.cloneNode(true);
+                        KOIN.appendChild(k);
                     
+                        // Refresh totals
+                        recalculateTotals();
+                    }
+                });
 
-                    // Oya
-                    const o = document.createElement("input");
-                    o.addEventListener("change", (_) => {
-                        sanatiseInput(o);
-                        recalculateTotals()}
-                    );
-                    o.type = "number";
-                    o.min = 0;
-                    o.value = 0;
-                    o.innerText = i;
-                    OYAIN.appendChild(o);
-
-
-                    // Ko
-                    const k = o.cloneNode(true);
-                    KOIN.appendChild(k);
-                
-                    // Refresh totals
-                    recalculateTotals();
-                }
-            });
+                // Page init
+                BTN_NEWGAME.click();            // Click the button on page load to start a new game
+            }
         </script>
         <noscript>  <!-- Hiding the entire page if no script is active -->
             <style>#content {display: none} </style>
