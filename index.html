@@ -3,206 +3,199 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Koikoi scorechart</title>
+        <title>Koi-koi scoresheet</title>
         <style>
-            /* Global styles */
-            * {
+            /* Global variables and styles */
+            :root {
+                --bg: #FFFFFF;
+                --fg: #000000;
+                --cell-height: 5vmin;
                 font-family: sans-serif;
-                font-size: 20px;
             }
 
-            label {
-                padding: 0px 20px;
+            /* Center content */ 
+            #content {
+                width: min-content;
+                margin: 0px auto;
             }
 
-            input {
-                text-align: center;
+            #controls, #controls * {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+
+            /* Table */
+            #cols {
+                display: flex;
+            }
+
+            #month, #pic, #oyain, #koin, #monthinner, #picinner, #oyainner, #koinner {
+                display: flex;
+                flex-direction: column;
+                min-width: max-content;
+            }
+
+            input, p, svg {
+                height: var(--cell-height);
+                margin: 3px;
+                padding: 0;
                 box-sizing: border-box;
+                font-size: calc(var(--cell-height)/2);
 
-                border-width: 2px;
-                border-radius: 20px;
-                border-style: solid;
-                border-color: #AAA;
+                display: flex;
+                justify-content: center;
             }
 
-            input::-webkit-outer-spin-button,
-            input::-webkit-inner-spin-button {
-                -webkit-appearance: none;
-                margin: 0;
+            p {
+                line-height: var(--cell-height);
             }
 
             input[type=number] {
                 -moz-appearance: textfield;
-            }
-
-            button {
-                border-width: 2px;
-                border-radius: 20px;
-                border-style: solid;
-                border-color: #AAA;
-
-                background-color: #FFF;
-            }
-
-            button:hover {
-                background-color: #EEE;
-            }
-            }
-
-            #oyatotal, #kototal {
-                font-weight: bold;
-            }
-
-            /* Alignments */ 
-            #scoretable {
-                width: 100%;
-            }
-            
-            #scoretable td {
+                border: 2px solid #AAA;
+                border-radius: 5vmin;
                 text-align: center;
-                vertical-align: middle;
             }
 
-            #newgamecontainer {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-            }
-
-            html {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-            }
-
-            /* Mobile */
-            @media only screen and (orientation: portrait) {
-                body {
-                    min-width: 100%
-                }
-
-                label {
-                    padding: 0px;
-                }
-
-                #scoretable input {
-                    min-width: 90%
-                }
-
-                #sizeInput {
-                    min-width: 20%
-                }
-
-                #newgamecontainer {
-                    margin: 0 auto;
-                    width: 300px;
-                    justify-content: space-between;
-                }
+            input::-webkit-outer-spin-button,
+            input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+                margin: 0;
             }
         </style>
     </head>
 
     <body>
         <div id="content">
-            <table id="scoretable">
-                <tr id="scorehead">
-                    <th>親 Oya</th>
-                    <th>子 Ko</th>
-                </tr>
-            </table>
+            <div id="cols">
+                <div id="month">
+                    <p><strong>月/Month</strong></p>
+                    <div id="monthinner"></div>
+                </div>
+                <div id="pic">
+                    <p></p>
+                    <div id="picinner"></div>
+                </div>
+                <div id="oyain">
+                    <p><strong>親/Oya</strong></p>
+                    <div id="oyainner"></div>
+                    <p><strong id="oyatotal"></strong></p>
+                </div>
+                <div id="koin">
+                    <p><strong>子/Ko</strong></p>
+                    <div id="koinner"></div>
+                    <p><strong id="kototal"></strong></p>
+                </div>
+            </div>
 
-            <div id="newgamecontainer">
-                <input type="number" name="sizeInput" id="sizeInput" min="1" max="12" value="1">
-                <label for="sizeInput">月/months</label>
+            <hr />
+
+            <div id="controls">
+                <input type="number" name="sizeinput" id="sizeinput" min="1" max="12" value="1"> 
+                <label for="sizeinput">月/months</label>
                 <button id="newgame"> 勝負/Go</button>
             </div>
+
         </div>
 
         <script>
-            const scoreTable = document.getElementById("scoretable");
-            const scoreHead = document.getElementById("scorehead").cloneNode(true); // Save a copy of the scorehead for table reconstruction
-            const newGameButton = document.getElementById("newgame");
+            // Elements
+            const INP_NEWGAME = document.getElementById("sizeinput");
+            const BTN_NEWGAME = document.getElementById("newgame");
 
-            newGameButton.addEventListener("click", () => {
-                const sizeInput = document.getElementById("sizeInput");
-                const size = sizeInput.value;
+            const MONTHS = document.getElementById("monthinner");
+            const PICS = document.getElementById("picinner");
+            const OYAIN = document.getElementById("oyainner");
+            const KOIN = document.getElementById("koinner");
 
-                // Delete table
-                scoreTable.innerHTML = "";                                          // Safe as this is not dependent on user input
+            const OYATOTAL = document.getElementById("oyatotal");
+            const KOTOTAL = document.getElementById("kototal");
 
-                // Re-add head
-                scoreTable.appendChild(scoreHead.cloneNode(true));
+            // State
+            let oyaTotal = 0;
+            let koTotal = 0;
 
-                // Iterate new rows
-                for (let i = 1; i <= size; i++) {                                   // "oya ko" header means i should start at 1
-                    const tableRow = document.createElement("tr");
+            // Utils
+            function sanatiseInput(target) {
+                if (isNaN(parseInt(target.value)))
+                    target.value = 0
 
-                    ["oya", "ko"].forEach(() => {
-                        const cell = document.createElement("td");
+                if (parseInt(target.value) < 0) 
+                    target.value = 0
+            }
 
-                        const input = document.createElement("input");
-
-                        input.type = "number";
-                        input.value = 0;
-                        input.min = 0;
-                        input.addEventListener("input", recalculateTotals);
-
-                        cell.appendChild(input);
-
-                        tableRow.appendChild(cell);
-                    });
-
-                    scoreTable.appendChild(tableRow);
-                }
-
-                // Re-add totals
-                const tableRow = document.createElement("tr");
-
-                const oyaTotal = document.createElement("td");
-                oyaTotal.id = "oyatotal";
-                const koTotal = document.createElement("td");
-                koTotal.id = "kototal";
-
-                tableRow.append(oyaTotal);
-                tableRow.append(koTotal);
-                    
-                scoreTable.appendChild(tableRow);
-                recalculateTotals();
-            });
-
-
+            // Bindings
             function recalculateTotals() {
-                let oyaScore= 0;
-                let koScore = 0;
+                oyaTotal = 0;
+                koTotal = 0;
 
-                // Iterate through the table and sum the oya and ko scores
-                const size = scoreTable.childNodes.length;
+                OYAIN.childNodes.forEach(node => oyaTotal += parseInt(node.value));
+                KOIN.childNodes.forEach(node => koTotal += parseInt(node.value));
 
-                for (let i = 1; i < size-1; i++) {                                      // "oya ko" header means i should start at 1
-                    const element = scoreTable.childNodes[i];
-                    oyaScore += parseInt(element.childNodes[0].childNodes[0].value);    // [0][0] = oya input element 
-                    koScore += parseInt(element.childNodes[1].childNodes[0].value);     // [1][0] = ko input element
-                }
-
-                // Display scores
-                document.getElementById("oyatotal").innerText = oyaScore;
-                document.getElementById("kototal").innerText = koScore;
+                OYATOTAL.innerText = oyaTotal;
+                KOTOTAL.innerText = koTotal;
             }
 
-            // Preventing device sleep
-            async function noSleep() {
-                const wakeLock = await navigator.wakeLock.request("screen");
-
-                // If we are no longer allowed to sleep, attempt to sleep
-                wakeLock.addEventListener("release", () => {
-                    noSleep();
+            window.onload = () => {
+                // Sanatising "month" input box
+                INP_NEWGAME.addEventListener("change", () => {
+                    sanatiseInput(INP_NEWGAME);
+                    INP_NEWGAME.value = INP_NEWGAME.value <= 0 ? 1 : INP_NEWGAME.value;
+                    INP_NEWGAME.value = INP_NEWGAME.value > 12 ? 1 : INP_NEWGAME.value;
                 });
-            }
 
-            noSleep();
+                // Populating table
+                BTN_NEWGAME.addEventListener("click", () => {
+                    const val = parseInt(INP_NEWGAME.value);
+
+                    // Clearing elements
+                    MONTHS.innerHTML = "";
+                    PICS.innerHTML = "";
+                    OYAIN.innerHTML = "";
+                    KOIN.innerHTML = "";
+
+                    // Creating new elements
+                    for (let i = 1; i <= val; i++) {
+                        // Month
+                        const m = document.createElement("p");
+                        m.innerText = i;
+                        MONTHS.appendChild(m);
+
+
+                        // Pic
+                        const p = document.createElement("svg");
+                        PICS.appendChild(p);
+                        
+
+                        // Oya
+                        const o = document.createElement("input");
+                        o.addEventListener("change", (_) => {
+                            sanatiseInput(o);
+                            recalculateTotals()}
+                        );
+                        o.type = "number";
+                        o.min = 0;
+                        o.value = 0;
+                        o.innerText = i;
+                        OYAIN.appendChild(o);
+
+
+                        // Ko
+                        const k = o.cloneNode(true);
+                        KOIN.appendChild(k);
+                    
+                        // Refresh totals
+                        recalculateTotals();
+                    }
+                });
+
+                // Page init
+                BTN_NEWGAME.click();            // Click the button on page load to start a new game
+            }
         </script>
         <noscript>  <!-- Hiding the entire page if no script is active -->
-            <style>#container {display: none} </style>
+            <style>#content {display: none} </style>
             <span>Please enable JavaScript</span>
         </noscript>
     </body>
