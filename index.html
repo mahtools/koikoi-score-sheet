@@ -2,6 +2,11 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8">
+
+        <meta name="description" content="A scoresheet for Koi-koi">
+        <meta name="keywords" content="Koi-koi, Koi Koi, Scoresheet, Scorechart, Score sheet">
+        <meta name="author" content="Mahtools">
+
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Koi-koi scoresheet</title>
         <style>
@@ -115,6 +120,12 @@
             // State
             let oyaTotal = 0;
             let koTotal = 0;
+            
+            // Bindings
+            function onUpdate(e) {
+                sanatiseInput(e.target);
+                recalculateTotals();
+            }
 
             // Utils
             function sanatiseInput(target) {
@@ -170,10 +181,7 @@
 
                         // Oya
                         const o = document.createElement("input");
-                        o.addEventListener("change", (_) => {
-                            sanatiseInput(o);
-                            recalculateTotals()}
-                        );
+                        o.addEventListener("change", onUpdate);
                         o.type = "number";
                         o.min = 0;
                         o.value = 0;
@@ -183,6 +191,7 @@
 
                         // Ko
                         const k = o.cloneNode(true);
+                        k.addEventListener("change", onUpdate);
                         KOIN.appendChild(k);
                     
                         // Refresh totals
